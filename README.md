@@ -148,9 +148,7 @@ void loop() {
 
 ### Manual Scrolling
 - **`Up()` / `Down()`**: Moves the cursor one position up or down.
-- **`fullUp()` / `fullDown()`**:
+- **`fullUp()` / `fullDown()`**: Jump immediately to the first selectable item or the last item in the current menu.
 
 ## Autor
 Desarrollado y mantenido por **Holman Buenaventura**.
-
-#### **[[SPANISH]](#english)** 
