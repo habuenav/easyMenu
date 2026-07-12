@@ -1,0 +1,42 @@
+{
+  "name": "easyMenu",
+  "version": "1.0.0",
+  "description": "Library to create and manage menus easily, supports Adafruit_GFX and U8g2 drivers. It features multi-level menus, memory management to prevent fragmentation, marquee (horizontal auto-scroll) for long texts, and adaptive spacing.",
+  "keywords": [
+    "menu",
+    "display",
+    "oled",
+    "lcd",
+    "u8g2",
+    "adafruit-gfx",
+    "ui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/habuenav/easyMenu.git"
+  },
+  "authors": [
+    {
+      "name": "Holman Buenaventura",
+      "maintainer": true
+    }
+  ],
+  "frameworks": [
+    "arduino"
+  ],
+  "platforms": [
+    "espressif32",
+    "raspberrypi",
+    "atmelsam",
+    "atmelavr",
+    "ststm32"
+  ],
+  "dependencies": {},
+  "export": {
+    "include": [
+      "easyMenu.h",
+      "keywords.txt",
+      "library.properties"
+    ]
+  }
+}
