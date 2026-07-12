@@ -1,13 +1,32 @@
-sm	KEYWORD1
+# Syntax Colouring Map For easyMenu
+
+# Data types (KEYWORD1)
+easyMenu	KEYWORD1
+txtMenu	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+begin	KEYWORD2
 Show	KEYWORD2
+updateMenu	KEYWORD2
+Enter	KEYWORD2
+addOption	KEYWORD2
 Assign	KEYWORD2
 Root	KEYWORD2
 Pause	KEYWORD2
 Select	KEYWORD2
-SetAutoOff	KEYWORD2
+setAutoOff	KEYWORD2
+setInterline	KEYWORD2
+setMaxLines	KEYWORD2
 Up	KEYWORD2
 Down	KEYWORD2
 fullUp	KEYWORD2
 fullDown	KEYWORD2
 Message	KEYWORD2
-GetInterline	KEYWORD2
+getInterline	KEYWORD2
+
+# Constants (LITERAL1)
+LEFT	LITERAL1
+CENTER	LITERAL1
+RIGHT	LITERAL1
+U8g2	LITERAL1
+GFX	LITERAL1
