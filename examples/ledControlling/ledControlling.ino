@@ -1,4 +1,4 @@
-// FILE: menuLeds.ino
+// FILE: ledControlling.ino
 // AUTHOR: Holman Buenaventura
 // PURPOSE: Show use menu library for led controlling.
 #define LIBRARY U8g2
