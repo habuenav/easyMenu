@@ -15,8 +15,7 @@ txtMenu mainMenu[] = {
     "Set led 1",
     "Set led 2",
     "All leds off", 
-    "All leds on", 
-    "Exit"
+    "All leds on"    
 };
 txtMenu subMenu1[] = {
     "LED 1", 
@@ -72,9 +71,6 @@ void loop() {
             digitalWrite(LED2_PIN, HIGH);
             Menu.Message("SYSTEM|All leds|turned on", CENTER, 1500);
             Menu.Root();
-        }
-        else if (Menu.Select(5, "MAIN_MENU")) {
-            Menu.Message("Closing menu...", CENTER, 1000);
         }
         // Submenu 1 logic
         // =================================================================
