@@ -31,22 +31,7 @@
 
 ### Codigo de ejemplo
 ```
-#include <Breath.h>
-#define OUTPUT_PIN 13
-#define CLOCK_PIN 12
-Breath breath(OUTPUT_PIN, CLOCK_PIN);
 
-void setup() {
-  Serial.begin(115200);
-  breath.setResistance(3);  // Ajustar la resistencia de soplo (1 = mínima, 5 = máxima).
-  breath.setMaxOut(127);    // Establecer el valor máximo de salida.
-}
-
-void loop() {
-  int16_t breathValue = breath.read();
-  Serial.println(breathValue);
-  delay(100);
-}
 ```
 
 ## Métodos de la API (`easyMenu`)
@@ -121,6 +106,11 @@ void loop() {
 
 *Alternatively, you can extract the contents of the ZIP file directly into the `libraries` folder of your Arduino working directory.*
 
+### Example Code
+```
+
+```
+
 ## API Methods (`easyMenu`)
 
 ### Initialization and Configuration
@@ -151,4 +141,4 @@ void loop() {
 - **`fullUp()` / `fullDown()`**: Jump immediately to the first selectable item or the last item in the current menu.
 
 ## Autor
-Desarrollado y mantenido por **Holman Buenaventura**.
+Developed and maintained by **Holman Buenaventura**.
