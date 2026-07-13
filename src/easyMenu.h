@@ -19,53 +19,32 @@ typedef bool (*MenuEventCallback)();
 // Función isNumeric optimizada
 inline bool isNumeric(String str) {   char* p;   return str.length() > 0 && (strtol(str.c_str(), &p, 10), *p == '\0'); }
 
-
 template<typename T>
 uint8_t size(T (&arr)) { 
     uint8_t n = NUMITEMS(arr);
     n = (n > 0) ? n - 1 : n;  
-    if(arr[n][strlen(arr[n].c_str()) - 1] != ' ' && n > 0) { 
-        arr[n] = String(arr[n] + ' ');  
-    } else {  
-        n = 0; 
-        do { n++; } while(arr[n][strlen(arr[n].c_str()) - 1] != ' ');  
-    }
+    if(arr[n][strlen(arr[n].c_str()) - 1] != ' ' && n > 0) {       arr[n] = String(arr[n] + ' ');  }
+    else {  n = 0; do { n++; } while(arr[n][strlen(arr[n].c_str()) - 1] != ' ');  }
     return n + 1;    
 }
-
-// Procesamiento de cadenas con '|' (Optimizado con punteros)
-inline char *getStringLineStart(uint8_t line_idx, char *str) {
+inline char *getStringLineStart(uint8_t line_idx, char *str) { // Procesamiento de cadenas con '|' (Optimizado con punteros)
     uint8_t line_cnt = 1;
     if (line_idx == 0) return str;
-    while (*str != '\0') {
-        if (*str++ == '|') {
-            if (line_cnt == line_idx) return str;
-            line_cnt++;
-        }
-    }
+    while (*str != '\0') { if (*str++ == '|') {  if (line_cnt == line_idx) return str;   line_cnt++;  } }
     return NULL;
 }
-
 inline uint8_t stringLineCnt(char *str) {
     uint8_t line_cnt = 1;
     if (str == NULL) return 0;
-    while (*str != '\0') {
-        if (*str++ == '|') line_cnt++;
-    }
+    while (*str != '\0') { if (*str++ == '|') line_cnt++;  }
     return line_cnt;
 }
-
 inline void copyStringLine(char *dest, uint8_t line_idx, char *str) {
     if (dest == NULL) return;
     str = getStringLineStart(line_idx, str);
-    if (str != NULL) {
-        while (*str != '|' && *str != '\0') {
-            *dest++ = *str++;
-        }
-    }
+    if (str != NULL)  {  while (*str != '|' && *str != '\0') {  *dest++ = *str++; } }
     *dest = '\0';
 }
-
 // Configuración de Drivers de Pantalla
 #if LIBRARY == U8g2
     #include <U8g2lib.h>
@@ -83,38 +62,52 @@ inline void copyStringLine(char *dest, uint8_t line_idx, char *str) {
     #define STRWidth(t) strWidth(t)
     #define CENTER_H(t) ((LCDWidth - STRWidth(t)) / 2)
     #define RIGHT_H(t) (LCDWidth - STRWidth(t))
-    #define tx 2.4
-    #define ty 1.9
-    #define ix 2.1
-    #define iy 1.9
+    #define tx _tx
+    #define ty _ty
+    #define ix _ix
+    #define iy _iy
 #endif
 
 enum { LEFT, CENTER, RIGHT };
 
 class easyMenu {
 public:
-    easyMenu& AttachUp(MenuEventCallback cb) { _upCallback = cb; return *this; }
-    easyMenu& AttachDown(MenuEventCallback cb) { _downCallback = cb; return *this; }
-    easyMenu& AttachSelect(MenuEventCallback cb) { _selectCallback = cb; return *this; }
+    easyMenu& attachUp(MenuEventCallback cb) { _upCallback = cb; return *this; }
+    easyMenu& attachDown(MenuEventCallback cb) { _downCallback = cb; return *this; }
+    easyMenu& attachEnter(MenuEventCallback cb) { _enterCallback = cb; return *this; }
+    easyMenu& attachRoot(MenuEventCallback cb) { _rootCallback = cb; return *this; }
+    easyMenu& attachBack(MenuEventCallback cb) { _backCallback = cb; return *this; }
 
 #if LIBRARY == U8g2
-    easyMenu(U8G2& dispPointer) : disp(dispPointer) {
-        if (!titleFont && !itemFont) {
-            titleFont = itemFont = (LCDWidth * LCDHeight <= 4096) ? u8g2_font_roentgen_nbp_tr : u8g2_font_9x15B_tr;
+       easyMenu(U8G2& dispPointer) : disp(dispPointer) {
+       uint16_t area = LCDWidth * LCDHeight;
+       if (!titleFont && !itemFont) {
+            if (area <= 2880) { titleFont = u8g2_font_wedge_tr; itemFont  = u8g2_font_tiny5_tf; }
+            else if (area <= 4096 && LCDHeight <= 32) { titleFont = u8g2_font_squeezed_b6_tr; itemFont  = u8g2_font_spleen5x8_mf; }
+            else { titleFont = u8g2_font_roentgen_nbp_tr;  itemFont  = u8g2_font_resoledbold_tr; }
         }
         if (!titleFont) titleFont = itemFont;
         if (!itemFont) itemFont = titleFont;
     }
     const uint8_t *titleFont = NULL;
     const uint8_t *itemFont = NULL;
+
 #elif LIBRARY == GFX
-    easyMenu(Adafruit_GFX& dispPointer) : disp(dispPointer) {}
+        easyMenu(Adafruit_GFX& dispPointer) : disp(dispPointer) {
+        uint16_t area = LCDWidth * LCDHeight;
+        if (area <= 2880) { _tx = 1.2; _ty = 1.2; _ix = 1.0; _iy = 1.0; }
+        else if (area <= 3100) { _tx = 1.5; _ty = 1.4; _ix = 1.1; _iy = 1.1; }
+        else if (LCDWidth > 100 && LCDHeight <= 32) { _tx = 2.0; _ty = 1.9; _ix = 2.0; _iy = 1.8;  }
+        else if (LCDWidth >= 64 && LCDHeight > 64) {_tx = 2.5; _ty = 2.0; _ix = 2.3; _iy = 2.0;    }
+        else {  _tx = 2.0; _ty = 2.0;  _ix = 2.0; _iy = 1.9;   }
+    }
 #endif
 
     // Destructor (Libera memoria dinámica con free)
-    ~easyMenu() {
+    ~easyMenu() {    
         if (_opt) free(_opt);
         if (_root_opt) free(_root_opt);
+        if (_back_opt) free(_back_opt); // <-- Añadido
     }
 
     void begin() {
@@ -128,24 +121,16 @@ public:
         _isOff = false;
     }
 
-    bool PutSelect() {
-        if (_selectCallback && _selectCallback()) {
-            _lastActivity = millis();
-            _isOff = false;
-            return true;
-        }
+    bool Enter() {
+        if (_enterCallback && _enterCallback()) { _lastActivity = millis();  _isOff = false;   return true;   }
         return false;
     }
 
-    void AddOption(String nuevaOpcion) {
-        if (format) {
-            nuevaOpcion.toLowerCase();
-            if (nuevaOpcion.length() > 0) nuevaOpcion[0] = toUpperCase(nuevaOpcion[0]);
-        }
+    void addOption(String nuevaOpcion) {
+        if (format) { nuevaOpcion.toLowerCase(); if (nuevaOpcion.length() > 0) nuevaOpcion[0] = toUpperCase(nuevaOpcion[0]); }
 
         // El nuevo tamaño será la cantidad actual más la nueva ranura
         uint8_t nuevoTamano = _nroItems + 2; 
-
         // Reasignamos memoria dinámicamente usando realloc
         txtMenu* ptr_temporal = (txtMenu*) realloc(_opt, nuevoTamano * sizeof(txtMenu));
 
@@ -153,16 +138,46 @@ public:
             _opt = ptr_temporal;
             _opt[nuevoTamano - 1] = nuevaOpcion;
             _nroItems = nuevoTamano - 1; 
-            
             _change = true;      
             calculateLayout();   
         }
     }
 
-    void Show() {
+   void Show() {
         if (_upCallback && _upCallback()) Up();
         if (_downCallback && _downCallback()) Down();
+        if (_rootCallback && _rootCallback()) Root();
+        if (_backCallback && _backCallback()) Back();
+
         checkAutoOff();
+        
+        // Lógica de actualización de la marquesina (Scroll)
+        if (!_isOff && _pause == false) {
+            uint16_t textW = 0;
+            #if LIBRARY == U8g2
+                disp.setFont(itemFont);
+                textW = STRWidth(_opt[_selected].c_str());
+            #elif LIBRARY == GFX
+                disp.setTextSize(ix, iy);
+                textW = STRWidth(_opt[_selected]);
+            #endif
+
+            // Si el texto de la opción seleccionada no cabe en la pantalla
+            if (textW > (LCDWidth - 6)) { 
+                uint32_t scrollDelay = _scrollReset ? 1500 : 350; // Espera 1.5s al inicio, luego avanza cada 350ms
+                
+                if (millis() - _lastScrollTime > scrollDelay) {
+                    _scrollReset = false;
+                    _scrollPos++;
+                    _lastScrollTime = millis();
+                    _change = true; // Forzamos redibujado para el siguiente cuadro de la animación
+                    
+                    // Si ya se desplazó todo el texto, reinicia tras una breve pausa
+                    if (_scrollPos >= _opt[_selected].length()) { _scrollPos = 0;  _scrollReset = true;  }
+                }
+            }
+        }
+
         if (_isOff || !(_change && !_pause)) return;
 
         #if LIBRARY == U8g2
@@ -189,21 +204,28 @@ public:
         for (uint8_t i = initLine; i <= _nroItems; i++) {
             uint8_t j = (_selected > _max_lines) ? (i - initLine) + _title : i;
             
+            // Preparar el texto a mostrar (Normal o con Scroll si está seleccionado)
+            String textoMostrar = _opt[i];
+            if (i == _selected && _scrollPos > 0) {
+                // Genera el efecto de desplazamiento recortando los caracteres iniciales
+                textoMostrar = _opt[i].substring(_scrollPos); 
+            }
+
             #if LIBRARY == U8g2
-            uint8_t cur_x = (alignItem == CENTER) ? CENTER_H(_opt[i].c_str()) : (alignItem == RIGHT) ? RIGHT_H(_opt[i].c_str()) : 2;
+            uint8_t cur_x = (alignItem == CENTER) ? CENTER_H(textoMostrar.c_str()) : (alignItem == RIGHT) ? RIGHT_H(textoMostrar.c_str()) : 2;
             disp.setCursor(cur_x, (_lineht * j) + _interline);
             if (i == _selected) {
-                disp.drawBox(cur_x, (_lineht * j) + _interline, STRWidth(_opt[i].c_str()) + 4, _lineht - 2);
+                disp.drawBox(2, (_lineht * j) + _interline, LCDWidth - 4, _lineht - 1);
                 disp.setDrawColor(0);
-                disp.print(_opt[i].c_str());
+                disp.print(textoMostrar.c_str());
                 disp.setDrawColor(1);
             } else {
-                disp.print(_opt[i].c_str());
+                disp.print(textoMostrar.c_str());
             }
             #elif LIBRARY == GFX
-            disp.setCursor((alignItem == CENTER) ? CENTER_H(_opt[i]) : (alignItem == RIGHT) ? RIGHT_H(_opt[i]) : 2, j * (_lineht + _interline));
+            disp.setCursor((alignItem == CENTER) ? CENTER_H(textoMostrar) : (alignItem == RIGHT) ? RIGHT_H(textoMostrar) : 2, j * (_lineht + _interline));
             disp.setTextColor(i == _selected ? 0 : 1, i == _selected ? 1 : 0);
-            disp.print(_opt[i]);
+            disp.print(textoMostrar);
             #endif
         }
 
@@ -213,9 +235,9 @@ public:
        _change = false;
     }
 
-    easyMenu& SetAutoOff(uint16_t timeout) { _timeout = timeout * 1000; _lastActivity = millis(); _isOff = false; return *this; }
-    easyMenu& SetInterline(int8_t val) { interline = val; _change = true; return *this; }
-    easyMenu& SetMaxLines(int8_t val) { max_lines = val; _change = true; return *this; }
+    easyMenu& setAutoOff(uint16_t timeout) { _timeout = timeout * 1000; _lastActivity = millis(); _isOff = false; return *this; }
+    easyMenu& setInterline(int8_t val) { interline = val; _change = true; return *this; }
+    easyMenu& setMaxLines(int8_t val) { max_lines = val; _change = true; return *this; }
 
     void Up() { handleNav((_selected <= _title) ? _nroItems : _selected - 1); }
     void Down() { handleNav((_selected < _nroItems) ? _selected + 1 : _title); }
@@ -262,6 +284,8 @@ public:
 
     template <typename T, class tipo>
     void Assign(T &opt, tipo id, bool title = true) {
+        // Respaldamos el menú actual en el contenedor 'back' antes de asignar el nuevo
+        if (_opt != nullptr && _opt != _root_opt) { allocateAndFormat(_back_opt, _opt, _id != -1 ? String(_id) : _Id, _title);   _back_title = _title;   }
         allocateAndFormat(_opt, opt, id, title);
         _nroItems = size(opt) - 1;
         _title = title;
@@ -281,6 +305,25 @@ public:
         else if (_root_Id != "") Assign(_root_opt, _root_Id, _title);
     }
 
+   void Back() {
+        if (_back_id != -1) Assign(_back_opt, _back_id, _back_title);
+        else if (_back_Id != "") Assign(_back_opt, _back_Id, _back_title);
+    }
+
+    easyMenu& setTitleSize(float w, float h) { 
+        #if LIBRARY == GFX
+        _tx = w; _ty = h; _change = true; calculateLayout();
+        #endif
+        return *this; 
+    }
+
+    easyMenu& setItemSize(float w, float h) { 
+        #if LIBRARY == GFX
+        _ix = w; _iy = h; _change = true; calculateLayout();
+        #endif
+        return *this; 
+    }
+
     template <class tipo>
     bool Select(uint8_t sel, tipo id) {
         _lastActivity = millis();
@@ -290,7 +333,7 @@ public:
     }
 
     void Pause(bool opt) { _pause = opt; }
-    int8_t GetInterline() { return _interline; }
+    int8_t getInterline() { return _interline; }
 
     bool format = true;
     uint8_t alignTitle = LEFT;
@@ -302,7 +345,20 @@ public:
 private:
     MenuEventCallback _upCallback = nullptr;
     MenuEventCallback _downCallback = nullptr;
-    MenuEventCallback _selectCallback = nullptr;
+    MenuEventCallback _enterCallback = nullptr;
+    MenuEventCallback _rootCallback = nullptr;
+    MenuEventCallback _backCallback = nullptr;
+    uint32_t _lastScrollTime = 0; // Tiempo del último movimiento del scroll
+    uint8_t _scrollPos = 0;       // Carácter inicial desde donde se dibuja el texto
+    bool _scrollReset = true;     // Controla el retraso inicial antes de empezar a mover
+    txtMenu *_back_opt = nullptr;
+    String _back_Id;
+    int _back_id = -1;
+    bool _back_title = true;
+    float _tx = 2.4;
+    float _ty = 1.9;
+    float _ix = 2.1;
+    float _iy = 1.9;
 
 #if LIBRARY == GFX
     uint16_t strWidth(String str) { int16_t x1, y1; uint16_t w, h; disp.getTextBounds(str.c_str(), disp.getCursorX(), disp.getCursorY(), &x1, &y1, &w, &h); return w; }
@@ -314,7 +370,7 @@ private:
             disp.setFont(titleFont); 
             _titleht = _title ? STRHeight : 0; 
             disp.setFont(itemFont); 
-            _lineht = STRHeight;
+            _lineht = STRHeight + 1; // <--- +1 píxel de seguridad para evitar textos cortados en U8g2
         #elif LIBRARY == GFX
             disp.setTextSize(tx, ty); 
             _titleht = _title ? STRHeight("A") : 0; 
@@ -338,17 +394,40 @@ private:
             _max_lines = max_lines;
         }
 
-        if (interline != -1) {   _interline = interline; }
-        else 
-           {  uint8_t actual_visible_lines = (_nroItems < _max_lines) ? _nroItems : _max_lines;
-              if (actual_visible_lines > 0) 
-               { int16_t remainingPixels = availableHeight - (actual_visible_lines * _lineht);
-                 uint8_t total_gaps = (actual_visible_lines - 1) + _title;
-                  _interline= (total_gaps > 0) ? remainingPixels / total_gaps:  remainingPixels;
-                  if (_interline > _lineht) {   _interline = _lineht; }
-               } 
-              else { _interline = 0; }
-           }
+        if (interline != -1) {
+            _interline = interline;
+        } else {
+            uint8_t actual_visible_lines = (_nroItems < _max_lines) ? _nroItems : _max_lines;
+
+            if (actual_visible_lines > 0) {
+                int16_t remainingPixels = availableHeight - (actual_visible_lines * _lineht);
+                uint8_t total_gaps = (actual_visible_lines - 1) + _title;
+                
+                if (total_gaps > 0) {
+                    _interline = remainingPixels / total_gaps;
+                } else {
+                    _interline = remainingPixels; 
+                }
+
+                if (_interline > _lineht) {
+                    _interline = _lineht; 
+                }
+            } else {
+                _interline = 0;
+            }
+        }
+    }
+
+    void handleNav(uint8_t newSel) { 
+        _change = true; 
+        _lastActivity = millis(); 
+        _isOff = false; 
+        _selected = newSel; 
+        
+        // ¡Reiniciamos la marquesina al navegar!
+        _scrollPos = 0;
+        _scrollReset = true;
+        _lastScrollTime = millis();
     }
 
     void checkAutoOff() {
@@ -362,9 +441,6 @@ private:
         }
     }
 
-    void handleNav(uint8_t newSel) { _change = true; _lastActivity = millis(); _isOff = false; _selected = newSel; }
-
-    // Helper de asignación clásico migrado a malloc/free
     template <typename T, class tipo>
     void allocateAndFormat(txtMenu* &dest, T (&opt), tipo id, bool title, bool isRoot = false) {
         if (dest) free(dest);
@@ -392,7 +468,6 @@ private:
 #elif LIBRARY == GFX
     Adafruit_GFX& disp;
 #endif
-
     txtMenu *_opt = nullptr;
     txtMenu *_root_opt = nullptr;
     String _Id;
