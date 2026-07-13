@@ -33,6 +33,8 @@
 ```
 
 ```
+### Demostracion en linea
+pruebalo tu mismo en [WOKWI](https://wokwi.com/projects/469313717218921473)
 
 ## Métodos de la API (`easyMenu`)
 
@@ -110,6 +112,8 @@
 ```
 
 ```
+### Online Demo
+tray it yourself at [WOKWI](https://wokwi.com/projects/469313717218921473)
 
 ## API Methods (`easyMenu`)
 
