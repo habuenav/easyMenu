@@ -287,7 +287,7 @@ private:
     inline void setFontTitle() { disp.setFont(titleFont); disp.setFontPosTop(); }
     inline void setFontItem() { disp.setFont(itemFont); disp.setFontPosTop(); }
     inline uint16_t getFontHeight() { return disp.getMaxCharHeight() + 1; }
-    inline uint16_t getTextWidth(const char* text) { setFontItem(); return disp.getStrWidth(text); }
+    inline uint16_t getTextWidth(const char* text) { return disp.getStrWidth(text); }
     inline void dispPrint(const char* text, uint16_t x, uint16_t y, bool isSelected) {
         disp.setCursor(x, y);
         if (isSelected && _highlightMode == HIGHLIGHT_BOX) {
