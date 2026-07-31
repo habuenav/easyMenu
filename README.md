@@ -93,7 +93,8 @@ pruebalo tu mismo en [WOKWI](https://wokwi.com/projects/469313717218921473)
 
 ## 🤝 Contribuciones y Apoyo
 ¡Las contribuciones, *issues* y sugerencias son más que bienvenidas! Si tienes ideas para mejorar la librería o encuentras algún problema🐛, no dudes en abrir un *Issue* o enviar un *Pull Request*.
-Si `easyMenu` te ha sido de utilidad o te ayudó en tu proyecto, **considera darle una ⭐ al repositorio**. Es una excelente manera de apoyar el proyecto y ayuda a que otros desarrolladores en la comunidad de Arduino puedan encontrarlo.
+
+Si `easyMenu` te ha sido de utilidad, **considera darle una ⭐ al repositorio**. Es una gran forma de apoyar el proyecto y ayuda a que otros desarrolladores de la comunidad puedan encontrarlo.
 
 ## ✍🏼Autor
 Desarrollado y mantenido por **Holman Buenaventura**.
@@ -184,7 +185,8 @@ Try it yourself at [WOKWI](https://wokwi.com/projects/469313717218921473)
 
 ## 🤝 Contributions and Support
 Contributions, issues, and suggestions are more than welcome! If you have ideas for improving the library or encounter a problem 🐛, feel free to open an issue or submit a pull request.
-If `easyMenu` has been useful to you or has helped you in your project, **please consider giving the repository a star**. It's a great way to support the project and helps other developers in the Arduino community find it.
+
+If you found `easyMenu` useful, **please consider giving the repository a ⭐.** It's a great way to support the project and helps other developers in the community find it.
 
 ## ✍🏼Autor
 Developed and maintained by **Holman Buenaventura**.
