@@ -16,7 +16,7 @@
 ## Modificación Opcional Recomendada para Adafruit_GFX
 
 Si has usado antes la librería Adafruit_GFX, habrás notado que por defecto los tamaños de texto solo aceptan números enteros (1, 2, 3), lo que a veces resulta en saltos de tamaño muy abruptos en pantallas pequeñas.
-Para solucionar esto, incluimos una versión modificada de los archivos Adafruit_GFX.h y Adafruit_GFX.cpp en la carpeta optional/ del repositorio:
+Para solucionar esto, incluimos una versión modificada de los archivos Adafruit_GFX.h y Adafruit_GFX.cpp en la carpeta optional/ del repositorio. Creditos https://github.com/wmarkow/Adafruit-GFX-Library/tree/1.10.7-text-size
 
 ### ¿Qué hace esta modificación?
 Cambia el tipo de dato para la escala del texto de uint8_t a float. Esto te permite usar tamaños de fuente intermedios como 1.2, 1.5, 1.7, logrando un ajuste visual de los menús mucho más fino y legible.
@@ -115,7 +115,7 @@ It is optimized to consume minimal RAM, add zero memory fragmentation (Heap) dur
 ## Recommended Optional Modification for Adafruit_GFX
 
 If you have used the Adafruit_GFX library before, you may have noticed that by default, text sizes only accept integers (1, 2, 3), which sometimes results in very abrupt size jumps on small screens.
-To solve this, we've included a modified version of the Adafruit_GFX.h and Adafruit_GFX.cpp files in the optional/ folder of the repository:
+To solve this, we've included a modified version of the Adafruit_GFX.h and Adafruit_GFX.cpp files in the optional/ folder of the repository. Credits https://github.com/wmarkow/Adafruit-GFX-Library/tree/1.10.7-text-size
 
 ### What does this modification do?
 It changes the data type for the text scaling from uint8_t to float. This allows you to use intermediate font sizes like 1.2, 1.5, and 1.7, resulting in a much finer and more legible visual adjustment of the menus.
