@@ -3,7 +3,6 @@
 #define U8g2 0 
 #define GFX 1
 #define event(btn_expr) []() { return btn_expr; }
-#define NUMITEMS(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0])))
 #include "Arduino.h"
 
 #if LIBRARY == U8g2
@@ -12,7 +11,7 @@
     #include <Adafruit_GFX.h>
 #endif
 
-typedef String txtMenu;
+typedef const char* txtMenu;
 typedef bool (*MenuEventCallback)();
 
 // Modos de resaltado
@@ -24,36 +23,25 @@ inline bool isNumeric(const String& str) {
     return true;
 }
 
-template<typename T>
-uint8_t size(T (&arr)) { 
-    uint8_t n = NUMITEMS(arr);
-    n = (n > 0) ? n - 1 : n;  
-    if(arr[n][arr[n].length() - 1] != ' ' && n > 0) {       arr[n] = String(arr[n] + ' ');  }
-    else {  n = 0; do { n++; } while(arr[n][arr[n].length() - 1] != ' ');  }
-    return n + 1;    
-}
 inline const char *getStringLineStart(uint8_t line_idx, const char *str) {
     uint8_t line_cnt = 1;
     if (line_idx == 0) return str;
     while (*str != '\0') { if (*str++ == '|') { if (line_cnt == line_idx) return str; line_cnt++; } }
     return NULL;
 }
+
 inline uint8_t stringLineCnt(const char *str) {
     uint8_t line_cnt = 1;
     if (str == NULL) return 0;
     while (*str != '\0') { if (*str++ == '|') line_cnt++; }
     return line_cnt;
 }
+
 inline void copyStringLine(char *dest, uint8_t line_idx, const char *str) {
     if (dest == NULL) return;
     const char *p = getStringLineStart(line_idx, str);
     if (p != NULL) { while (*p != '|' && *p != '\0') { *dest++ = *p++; } }
     *dest = '\0';
-}
-inline void destroyStrings(txtMenu* arr, uint8_t count) {
-    if (arr == nullptr) return;
-    for (uint8_t i = 0; i < count; i++) arr[i].~String();
-    free(arr);
 }
 
 enum { LEFT, CENTER, RIGHT };
@@ -88,28 +76,9 @@ public:
     }
 #endif
 
-    ~easyMenu() { destroyStrings(_opt, _optCount); destroyStrings(_root_opt, _rootCount); }
+    void begin() { dispInit(); dispClear(); calculateLayout(); _lastActivity = millis(); _isOff = false; }
 
-    void begin() { dispInit();  dispClear();  calculateLayout();  _lastActivity = millis();  _isOff = false;  }
-
-    void addOption(String nuevaOpcion) {
-        if (format && nuevaOpcion.length() > 0) { nuevaOpcion.toLowerCase(); nuevaOpcion[0] = toUpperCase(nuevaOpcion[0]); }
-
-        uint8_t nuevoTamano = _nroItems + 2; 
-        txtMenu* ptr_temporal = (txtMenu*) realloc(_opt, nuevoTamano * sizeof(txtMenu));
-
-        if (ptr_temporal != nullptr) {
-            _opt = ptr_temporal;
-            new (&_opt[nuevoTamano - 1]) String(nuevaOpcion);
-            _nroItems = nuevoTamano - 1; 
-            _optCount = nuevoTamano;
-            _change = true;      
-            calculateLayout();   
-            checkSelectedScroll();
-        }
-    }
-
-   void show() {
+    void show() {
         if (_messageUntil > 0) {
             if (millis() < _messageUntil) return;
             _messageUntil = 0;
@@ -128,17 +97,24 @@ public:
                 _scrollPos++;
                 _lastScrollTime = millis();
                 _change = true;
-                if (_scrollPos >= _opt[_selected].length()) { _scrollPos = 0; _scrollReset = true; }
+                if (_scrollPos >= strlen(_opt[_selected])) { _scrollPos = 0; _scrollReset = true; }
             }
         }
 
-        if (_isOff || !(_change && !_pause)) return;
+        if (_isOff || !(_change && !_pause) || _opt == nullptr) return;
 
         dispClear();
-        if (_title) { setFontTitle(); dispPrint(_opt[0].c_str(), alignX(alignTitle, _opt[0].c_str()), 0, false); }
+        
+        // Renderizado de Título
+        if (_title) { 
+            setFontTitle(); 
+            String formattedTitle = formatText(_opt[0], true);
+            dispPrint(formattedTitle.c_str(), alignX(alignTitle, formattedTitle.c_str()), 0, false); 
+        }
+        
         setFontItem();
 
-        // Determinar índice inicial según el scroll vertical
+        // Renderizado de Ítems
         uint8_t firstItemIdx = _title ? 1 : 0;
         uint8_t initLine = (_selected < (firstItemIdx + _max_lines)) ? firstItemIdx : (_selected - _max_lines + 1);
         uint8_t maxRenderLine = min((int)_nroItems, (int)(initLine + _max_lines - 1));
@@ -146,17 +122,23 @@ public:
 
         for (uint8_t i = initLine; i <= maxRenderLine; i++) {
             uint8_t slotIndex = i - initLine; 
-            String textoSub;
-            const char* textoPtr = (i == _selected && _scrollPos > 0) ? (textoSub = _opt[i].substring(_scrollPos), textoSub.c_str()) : _opt[i].c_str();
+            const char* rawPtr = (i == _selected && _scrollPos > 0) ? (_opt[i] + _scrollPos) : _opt[i];
+            
+            // Aplicación de formato al vuelo
+            String itemText = formatText(rawPtr, false);
             uint16_t cur_y = startY + slotIndex * (_lineht + _interline);
-            // Verificación estricta: si el texto excede la pantalla, cancelamos la impresión de este ítem
+            
             if ((cur_y + _lineht) > getLcdHeight()) break;
+
             if (i == _selected && _highlightMode == HIGHLIGHT_CURSOR) {
-                String fullText = _cursorSymbol + String(" ") + String(textoPtr);
+                String fullText = _cursorSymbol + " " + itemText;
                 uint8_t cur_x = alignX(alignItem, fullText.c_str());
                 dispPrint(fullText.c_str(), cur_x, cur_y, false);
             } 
-            else {  uint8_t cur_x = alignX(alignItem, textoPtr);  dispPrint(textoPtr, cur_x, cur_y, (i == _selected));  }
+            else { 
+                uint8_t cur_x = alignX(alignItem, itemText.c_str()); 
+                dispPrint(itemText.c_str(), cur_x, cur_y, (i == _selected)); 
+            }
         }
         dispFlush();
         _change = false;
@@ -166,18 +148,17 @@ public:
     easyMenu& setInterline(int8_t val) { return interline = val, _change = true, calculateLayout(), *this; }
     easyMenu& setMaxLines(int8_t val) { return max_lines = val, _change = true, calculateLayout(), *this; }
 
-    // Configuración del cursor/resaltado
     easyMenu& setCursor(const String& symbol) {
-        if (symbol == "" || symbol == "BOX") { _highlightMode = HIGHLIGHT_BOX;   _cursorSymbol = ""; }
-        else { _highlightMode = HIGHLIGHT_CURSOR;  _cursorSymbol = symbol;  }
+        if (symbol == "" || symbol == "BOX") { _highlightMode = HIGHLIGHT_BOX; _cursorSymbol = ""; }
+        else { _highlightMode = HIGHLIGHT_CURSOR; _cursorSymbol = symbol; }
         _change = true;
         checkSelectedScroll();
         return *this;
     }
 
     bool enter() { return (_enterCallback && _enterCallback()) ? (_lastActivity = millis(), _isOff = false, true) : false; }    
-    void up() { handleNav((_selected <= _title) ? _nroItems : _selected - 1); }
-    void down() { handleNav((_selected < _nroItems) ? _selected + 1 : _title); }
+    void up() { handleNav((_selected <= (_title ? 1 : 0)) ? _nroItems : _selected - 1); }
+    void down() { handleNav((_selected < _nroItems) ? _selected + 1 : (_title ? 1 : 0)); }
     void fullUp() { handleNav(_title ? 1 : 0); }
     void fullDown() { handleNav(_nroItems); }
 
@@ -202,26 +183,44 @@ public:
         _messageUntil = millis() + wait;
     }
 
-    template <typename T, class tipo>
-    void assign(T &opt, tipo id, bool title = true) {
-        allocateAndFormat(_opt, _optCount, opt, id, title);
-        _nroItems = size(opt) - 1;
+    template <size_t N, class tipo>
+    void assign(const char* (&opt)[N], tipo id, bool title = true) {
+        _opt = opt;
+        _optCount = N;
+        _nroItems = _optCount - 1;
         _title = title;
         _selected = title ? 1 : 0;
+        String test = String(id);
+        if (isNumeric(test)) _id = test.toInt();
+        else _Id = test;
+        _change = true; _isOff = false; _lastActivity = millis();
         calculateLayout();
         checkSelectedScroll();
     }
 
-    template <typename T, class tipo>
-    void root(T &opt, tipo id, bool title = true) {
-        allocateAndFormat(_root_opt, _rootCount, opt, id, title, true);
-        _title = title;
-        assign(_root_opt, id, title);
+    template <size_t N, class tipo>
+    void root(const char* (&opt)[N], tipo id, bool title = true) {
+        _root_opt = opt;
+        _rootCount = N;
+        String test = String(id);
+        if (isNumeric(test)) _root_id = test.toInt();
+        else _root_Id = test;
+        assign(opt, id, title);
     }
 
     void root() {
-        if (_root_id != -1) assign(_root_opt, _root_id, _title);
-        else if (_root_Id != "") assign(_root_opt, _root_Id, _title);
+        if (_root_opt != nullptr) {
+            _opt = _root_opt;
+            _optCount = _rootCount;
+            _nroItems = _optCount - 1;
+            if (_root_id != -1) _id = _root_id;
+            else if (_root_Id != "") _Id = _root_Id;
+            
+            _selected = _title ? 1 : 0;
+            _change = true; _isOff = false; _lastActivity = millis();
+            calculateLayout();
+            checkSelectedScroll();
+        }
     }
 
     easyMenu& setTitleSize(float w, float h) { 
@@ -249,12 +248,12 @@ public:
     void pause(bool opt) { _pause = opt; }
     int8_t getInterline() { return _interline; }
 
-    bool format = true;
     uint8_t alignTitle = LEFT;
     uint8_t alignItem = LEFT;
     int8_t interline = -1;
     int8_t max_lines = -1;
     uint8_t _selected = 0;
+    bool format = true;
 
 private:
     MenuEventCallback _upCallback = nullptr;
@@ -276,6 +275,15 @@ private:
     float _ix = 1.6;
     float _iy = 1.5;
 
+    String formatText(const char* text, bool isTitleLine = false) {
+        if (!format || text == nullptr) return String(text);
+        String str = text;
+        if (str.length() == 0) return str;
+        if (isTitleLine) {  str.toUpperCase();  } 
+       else {  str.toLowerCase();  str[0] = toupper(str[0]); }
+        return str;
+    }
+
 //===========================================================================
 #if LIBRARY == U8g2
     U8G2& disp;
@@ -286,7 +294,7 @@ private:
     inline uint16_t getLcdHeight() { return disp.getDisplayHeight(); }
     inline void setFontTitle() { disp.setFont(titleFont); disp.setFontPosTop(); }
     inline void setFontItem() { disp.setFont(itemFont); disp.setFontPosTop(); }
-    inline uint16_t getFontHeight() { return disp.getMaxCharHeight() + 1; }
+    inline uint16_t getFontHeight() { return disp.getMaxCharHeight(); }
     inline uint16_t getTextWidth(const char* text) { return disp.getStrWidth(text); }
     inline void dispPrint(const char* text, uint16_t x, uint16_t y, bool isSelected) {
         disp.setCursor(x, y);
@@ -296,7 +304,7 @@ private:
             disp.print(text);
             disp.setDrawColor(1);
         } 
-        else {  disp.print(text);  }
+        else { disp.print(text); }
     }
 #elif LIBRARY == GFX
     Adafruit_GFX& disp;
@@ -308,15 +316,12 @@ private:
     inline uint16_t getLcdHeight() { return disp.height(); }
     inline void setFontTitle() { disp.setTextSize(_tx, _ty); disp.setTextColor(1); }
     inline void setFontItem() { disp.setTextSize(_ix, _iy); }
-    inline uint16_t getFontHeight() { int16_t x1, y1; uint16_t w, h; disp.getTextBounds("A", 0, 0, &x1, &y1, &w, &h); return h+1; }
+    inline uint16_t getFontHeight() { int16_t x1, y1; uint16_t w, h; disp.getTextBounds("A", 0, 0, &x1, &y1, &w, &h); return h; }
     inline uint16_t getTextWidth(const char* text) { int16_t x1, y1; uint16_t w, h; disp.getTextBounds(text, 0, 0, &x1, &y1, &w, &h); return w; }
     inline void dispPrint(const char* text, uint16_t x, uint16_t y, bool isSelected) {
         disp.setCursor(x, y);
-        if (isSelected && _highlightMode == HIGHLIGHT_BOX) {
-            disp.setTextColor(0, 1);
-        } else {
-            disp.setTextColor(1, 0);
-        }
+        if (isSelected && _highlightMode == HIGHLIGHT_BOX) {  disp.setTextColor(0, 1);  } 
+        else { disp.setTextColor(1, 0); }
         disp.print(text);
     }
 #endif
@@ -325,12 +330,13 @@ private:
         return (align == CENTER) ? (getLcdWidth() - getTextWidth(text)) / 2 :
                (align == RIGHT)  ? (getLcdWidth() - getTextWidth(text)) : 2;
     }
-// =========================================================================
 
     void checkSelectedScroll() {
-        if (_opt == nullptr || _selected > _nroItems) { _selectedNeedsScroll = false;  return;   }
-        uint16_t textW = getTextWidth(_opt[_selected].c_str());
-        if (_highlightMode == HIGHLIGHT_CURSOR) {  textW += getTextWidth((_cursorSymbol + " ").c_str());  }
+        if (_opt == nullptr || _selected > _nroItems) { _selectedNeedsScroll = false; return; }
+        setFontItem();
+        String formattedText = formatText(_opt[_selected], false);
+        uint16_t textW = getTextWidth(formattedText.c_str());
+        if (_highlightMode == HIGHLIGHT_CURSOR) { textW += getTextWidth((_cursorSymbol + " ").c_str()); }
         _selectedNeedsScroll = (textW > (getLcdWidth() - 6));
     }
 
@@ -342,9 +348,9 @@ private:
         int16_t availableHeight = max(0, (int)(getLcdHeight() - _titleht));
         uint8_t totalItems = (_nroItems >= (uint8_t)_title) ? (_nroItems + 1 - _title) : 0;
         uint8_t max_fit_lines = availableHeight / _lineht;
-        _max_lines = (max_lines != -1)? min((uint8_t)max_lines, max_fit_lines):_max_lines = max_fit_lines;
+        _max_lines = (max_lines != -1) ? min((uint8_t)max_lines, max_fit_lines) : max_fit_lines;
 
-        if (interline != -1) {  _interline = interline;  }
+        if (interline != -1) { _interline = interline; }
         else {
             uint8_t visible_lines = min(totalItems, _max_lines);
             if (visible_lines > 0) {
@@ -353,7 +359,7 @@ private:
                 _interline = (gaps > 0) ? (remainingPixels / gaps) : 0;
                 _interline = max((int8_t)0, min(_interline, (int8_t)_lineht));
             }
-            else {  _interline = 0; }
+            else { _interline = 0; }
         }
 
         while (_max_lines > 0) {
@@ -364,8 +370,8 @@ private:
                 uint8_t gaps = visible_lines - 1 + (_title ? 1 : 0);
                 required_height += gaps * _interline;
             }
-            if (required_height <= availableHeight) break; // Cabe perfectamente sin cortar nada
-            _max_lines--; // Reducir líneas si la combinación excede la pantalla
+            if (required_height <= availableHeight) break;
+            _max_lines--;
         }
     }
 
@@ -375,35 +381,11 @@ private:
         checkSelectedScroll();
     }
 
-    void checkAutoOff() {
-        if (_timeout > 0 && !_isOff && (millis() - _lastActivity > _timeout)) { dispClear();  dispFlush();  _isOff = true;  }
-    }
+    void checkAutoOff() { if (_timeout > 0 && !_isOff && (millis() - _lastActivity > _timeout)) { dispClear(); dispFlush(); _isOff = true; } }
 
-    template <typename T, class tipo>
-    void allocateAndFormat(txtMenu* &dest, uint8_t &destCount, T (&opt), tipo id, bool title, bool isRoot = false) {
-        destroyStrings(dest, destCount);
-        uint8_t tam = size(opt);
-        String test = String(id);
-        
-        if (isNumeric(test)) (isRoot ? _root_id : _id) = test.toInt();
-        else (isRoot ? _root_Id : _Id) = test;
-        
-        dest = (txtMenu*) malloc(tam * sizeof(txtMenu));
-        for (uint8_t i = 0; i < tam; i++) {
-            new (&dest[i]) String(opt[i]); 
-            if (format) {
-                dest[i].toLowerCase();
-                if (dest[i].length() > 0) dest[i][0] = toUpperCase(dest[i][0]);
-                if (title && i == 0) dest[0].toUpperCase();
-            }
-        }
-        destCount = tam;
-        _change = true, _isOff = false, _lastActivity = millis();
-    }
-
-    txtMenu *_opt = nullptr;
+    txtMenu*_opt = nullptr;
     uint8_t _optCount = 0;
-    txtMenu *_root_opt = nullptr;
+    txtMenu*_root_opt = nullptr;
     uint8_t _rootCount = 0;
     String _Id;
     int _id = -1;
