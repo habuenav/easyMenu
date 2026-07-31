@@ -4,7 +4,7 @@
 `easyMenu` es una biblioteca ligera y eficiente para Arduino, diseñada para crear y gestionar menús multinivel de manera sencilla. Es ideal para proyectos de hardware embebido que utilizan pantallas OLED/LCD y requieren una interfaz limpia y fluida.
  está optimizada para consumir el mínimo espacio en memoria RAM, agregando cero fragmentación de memoria (Heap) durante ejecuciones prolongadas.
 
-## ✨Características Destacadas
+## ✨Características
 
 - **🎞️Marquesina Automática (Scroll):** Si el texto de una opción seleccionada es más largo que el ancho físico de la pantalla, el menú inicia un desplazamiento horizontal suave de forma automática tras una breve pausa para permitir su lectura completa.
 - **🔄Interlineado Adaptativo Anti-Recorte:** Calcula matemáticamente el espaciado vertical óptimo basándose en la altura real del display y el número de ítems. Además, incluye un margen de seguridad estricto para evitar que la última opción se dibuje cortada.
@@ -105,7 +105,7 @@ Desarrollado y mantenido por **Holman Buenaventura**.
 `easyMenu` is a lightweight and efficient library for Arduino, designed to easily create and manage multi-level menus. It is ideal for embedded hardware projects using OLED/LCD displays that require a clean and fluid interface.
 It is optimized to consume minimal RAM, add zero memory fragmentation (Heap) during extended execution.
 
-## ✨Key Features
+## ✨Features
 
 - **🎞️Automatic Marquee (Scroll):** If the text of a selected option is longer than the physical width of the screen, the menu automatically initiates a smooth horizontal scroll after a brief pause to allow for complete reading.
 - **🔄Adaptive Line Spacing Anti-Cropping:** Mathematically calculates the optimal vertical spacing based on the actual height of the display and the number of items. It also includes a strict safety margin to prevent the last option from being cropped.
