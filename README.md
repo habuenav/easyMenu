@@ -2,7 +2,7 @@
 
 # easyMenu
 `easyMenu` es una biblioteca ligera y eficiente para Arduino, diseñada para crear y gestionar menús multinivel de manera sencilla. Es ideal para proyectos de hardware embebido que utilizan pantallas OLED/LCD y requieren una interfaz limpia y fluida.
- está optimizada para consumir el mínimo espacio en memoria RAM, garantizando cero fragmentación de memoria (Heap) durante ejecuciones prolongadas.
+ está optimizada para consumir el mínimo espacio en memoria RAM, agregando cero fragmentación de memoria (Heap) durante ejecuciones prolongadas.
 
 ## ✨Características Destacadas
 
@@ -101,7 +101,7 @@ Desarrollado y mantenido por **Holman Buenaventura**.
 
 # easyMenu
 `easyMenu` is a lightweight and efficient library for Arduino, designed to easily create and manage multi-level menus. It is ideal for embedded hardware projects using OLED/LCD displays that require a clean and fluid interface.
-It is optimized to consume minimal RAM, guaranteeing zero memory fragmentation (Heap) during extended execution.
+It is optimized to consume minimal RAM, add zero memory fragmentation (Heap) during extended execution.
 
 ## ✨Key Features
 
