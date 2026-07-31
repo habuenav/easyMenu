@@ -70,6 +70,7 @@ pruebalo tu mismo en [WOKWI](https://wokwi.com/projects/469313717218921473)
 - **`setInterline(int8_t val)`**: Fuerza un valor fijo de interlineado (espacio en píxeles entre líneas) sustituyendo el cálculo adaptativo automático.
 - **`setAutoOff(uint16_t timeout)`**: Establece un temporizador en segundos para apagar la pantalla si no se detecta actividad.
 - **`getInterline()`**: Devuelve el valor del interlineado actual.
+- **`getMaxLines()`**: Devuelve la cantidad máxima de líneas que se renderizan en pantalla.
 
 ### Gestión de Contenido
 - **`assign(T &opt, tipo id, bool title = true)`**: Asigna y formatea las opciones de tu array. `opt`: array de cadenas; `id`: identificador único del menú (numérico o texto); `title`: define si el primer elemento actúa como título fijo.
@@ -153,12 +154,14 @@ Try it yourself at [WOKWI](https://wokwi.com/projects/469313717218921473)
 
 ### Initialization and Configuration
 - **`begin()`**: Initializes the menu state, clears the screen, and calculates the initial layout. Must be called within `setup()`.
-- `setCursor(const String& symbol)`: Configures how the active option is highlighted.
-- `setCursor("")` or `setCursor("BOX")`: Uses a white box and inverts the text color (default mode).
-- `setCursor(">")`, `setCursor("*")`, `setCursor("-")`: Places the specified symbol before the selected option.
-- `setMaxLines(int8_t val)`: Defines an absolute limit for the maximum number of lines rendered simultaneously on the screen.
-- `setInterline(int8_t val)`: Forces a fixed line spacing value (space in pixels between lines) overriding the automatic adaptive calculation.
-- `setAutoOff(uint16_t timeout)`: Sets a timer in seconds to turn off the screen if no activity is detected. - `getInterline()`: Returns the current line spacing value.
+- **`setCursor(const String& symbol)`**: Configures how the active option is highlighted.
+  - `setCursor("")` or `setCursor("BOX")`: Uses a white box and inverts the text color (default mode).
+  - `setCursor(">")`, `setCursor("*")`, `setCursor("-")`: Places the specified symbol before the selected option.
+- **`setMaxLines(int8_t val)`**: Defines an absolute limit for the maximum number of lines rendered simultaneously on the screen.
+- **`setInterline(int8_t val)`**: Forces a fixed line spacing value (space in pixels between lines) overriding the automatic adaptive calculation.
+- **`setAutoOff(uint16_t timeout)`**: Sets a timer in seconds to turn off the screen if no activity is detected.
+- **`getInterline()`**: Returns the current line spacing value.
+- **`getMaxLines()`**: Returns the maximum number of lines that are rendered on screen.
 
 ### Content Management
 - **`assign(T &opt, type id, bool title = true)`**: Assigns and formats the options in your array. `opt`: Array of strings; `id`: Unique menu identifier (numeric or text); `title`: Defines whether the first element acts as a fixed title.
