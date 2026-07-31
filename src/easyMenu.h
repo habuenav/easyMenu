@@ -247,6 +247,7 @@ public:
 
     void pause(bool opt) { _pause = opt; }
     int8_t getInterline() { return _interline; }
+    int8_t getMaxLines() { return _max_lines; }
 
     uint8_t alignTitle = LEFT;
     uint8_t alignItem = LEFT;
