@@ -1,6 +1,6 @@
 {
   "name": "easyMenu",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Library to create and manage menus easily, supports Adafruit_GFX and U8g2 drivers. It features multi-level menus, memory management to prevent fragmentation, marquee (horizontal auto-scroll) for long texts, and adaptive spacing.",
   "keywords": [
     "menu",
