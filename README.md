@@ -59,7 +59,7 @@ Nota: Este paso es completamente opcional. easyMenu funcionará con la versión 
 ### 🌐Demostraciones en linea
 pruebalo tu mismo en [WOKWI](https://wokwi.com/projects/469313717218921473)
 
-## Métodos de la API (`easyMenu`)
+## 🎯API
 
 ### Inicialización y Configuración
 - **`begin()`**: Inicializa el estado del menú, borra la pantalla y calcula el layout inicial. Debe llamarse dentro del `setup()`.
@@ -151,7 +151,7 @@ Note: This step is completely optional. easyMenu will work with the standard ver
 ### 🌐Online Demo
 Try it yourself at [WOKWI](https://wokwi.com/projects/469313717218921473)
 
-## API Methods (`easyMenu`)
+## 🎯API
 
 ### Initialization and Configuration
 - **`begin()`**: Initializes the menu state, clears the screen, and calculates the initial layout. Must be called within `setup()`.
